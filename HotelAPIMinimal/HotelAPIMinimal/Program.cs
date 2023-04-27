@@ -83,9 +83,9 @@ app.MapGet("/rooms", async (HotelDBContext db) => await db.Room.ToListAsync())
 app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCriteria criteria) =>
 {
     var rooms = db.Room.Select(r => r);
-    if (criteria.Type != null)
+    if (criteria.TypeReq())
     {
-        rooms = rooms.Where(r => r.RoomType.Id == criteria.Type);
+        rooms = rooms.Where(r => criteria.IsSatisfied(r));
     }
 
     if (criteria.Cleaned != null)
@@ -98,7 +98,10 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
         rooms = rooms.Where(r => r.CheckInStatus == criteria.Checkedin);
     }
 
-    return await rooms.ToListAsync();
+    var listOfRooms = await rooms.ToListAsync();
+
+    if (listOfRooms.Count > 0) return Results.Ok(listOfRooms);
+    return Results.NotFound();
 
 })
 .WithName("GetFilteredRooms")
@@ -107,6 +110,11 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
 
 app.MapPost("/room", async (HotelDBContext db, Room room) =>
 {
+    var roomType = await db.RoomType.FindAsync(room.RoomType.Id);
+    var hotel = await db.Hotel.FindAsync(room.Hotel.Id);
+
+    if (roomType == null || hotel == null) return Results.NotFound();
+
     await db.Room.AddAsync(room);
     await db.SaveChangesAsync();
     return Results.Created($"/room/{room.Id}", room);
@@ -189,12 +197,63 @@ app.MapPost("/guest", async (HotelDBContext db, Guest guest) =>
 .WithTags("Guest")
 .WithOpenApi();
 
+// RoomType API
+
+app.MapGet("/roomtype", async (HotelDBContext db) => await db.RoomType.ToListAsync())
+.WithName("GetRoomTypes")
+.WithTags("RoomType")
+.WithOpenApi();
+
+app.MapPost("/roomtype", async (HotelDBContext db, RoomType roomtype) =>
+{
+    await db.RoomType.AddAsync(roomtype);
+    await db.SaveChangesAsync();
+    return Results.Created($"/room/{roomtype.Id}", roomtype);
+})
+.WithName("CreateRoomType")
+.WithTags("RoomType")
+.WithOpenApi();
+
+app.MapDelete("/roomtype/{id}", async (HotelDBContext db, int id) =>
+{
+    var roomType = await db.RoomType.FindAsync(id);
+    if (roomType is null)
+    {
+        return Results.NotFound();
+    }
+    db.RoomType.Remove(roomType);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+})
+.WithName("DeleteRoomType")
+.WithTags("RoomType")
+.WithOpenApi();
+
 app.Run();
 
 
 public class FilterCriteria
 {
-    public int? Type { get; set; }
-    public Boolean? Cleaned { get; set; }
-    public Boolean? Checkedin { get; set; }
+    public int? MinBeds { get; set; }
+    public int? MaxBeds { get; set; }
+    public int? MinPrice { get; set; }
+    public int? MaxPrice { get; set; }
+
+    public bool? Cleaned { get; set; }
+    public bool? Checkedin { get; set; }
+
+    public bool TypeReq()
+    {
+        if (MinBeds != null || MaxBeds != null || MinPrice != null || MaxPrice != null) return true;
+        return false;
+    }
+
+    public bool IsSatisfied(Room room)
+    {
+        if (MinBeds != null && MinBeds > room.RoomType.Beds) return false;
+        if (MaxBeds != null && MaxBeds < room.RoomType.Beds) return false;
+        if (MinPrice != null && MinPrice > room.RoomType.Price) return false;
+        if (MaxPrice != null && MaxPrice < room.RoomType.Price) return false;
+        return true;
+    }
 }
