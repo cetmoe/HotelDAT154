@@ -75,17 +75,27 @@ app.MapDelete("/hotel/{id}", async (HotelDBContext db, int id) =>
 
 // Room API
 
-app.MapGet("/rooms", async (HotelDBContext db) => await db.Room.ToListAsync())
+app.MapGet("/rooms", async (HotelDBContext db) => await db.Room
+.Include(r => r.RoomType)
+.Include(r => r.Hotel)
+.ToListAsync())
 .WithName("GetRooms")
 .WithTags("Room")
 .WithOpenApi();
 
 app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCriteria criteria) =>
 {
-    var rooms = db.Room.Select(r => r);
+    var rooms = db.Room
+    .Include(r => r.RoomType)
+    .Include(r => r.Hotel)
+    .Select(r => r);
+
     if (criteria.TypeReq())
     {
-        rooms = rooms.Where(r => criteria.IsSatisfied(r));
+        rooms = rooms.Where(r => criteria.MinBeds != null ? r.RoomType.Beds >= criteria.MinBeds : true);
+        rooms = rooms.Where(r => criteria.MaxBeds != null ? r.RoomType.Beds <= criteria.MaxBeds : true);
+        rooms = rooms.Where(r => criteria.MinPrice != null ? r.RoomType.Beds >= criteria.MinPrice : true);
+        rooms = rooms.Where(r => criteria.MaxPrice != null ? r.RoomType.Beds <= criteria.MaxPrice : true);
     }
 
     if (criteria.Cleaned != null)
@@ -99,6 +109,8 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
     }
 
     var listOfRooms = await rooms.ToListAsync();
+
+
 
     if (listOfRooms.Count > 0) return Results.Ok(listOfRooms);
     return Results.NotFound();
@@ -229,6 +241,98 @@ app.MapDelete("/roomtype/{id}", async (HotelDBContext db, int id) =>
 .WithTags("RoomType")
 .WithOpenApi();
 
+// Reservation API
+
+app.MapGet("/reservations", async (HotelDBContext db) => await db.Reservation.ToListAsync())
+.WithName("GetReservations")
+.WithTags("Reservation")
+.WithOpenApi();
+
+app.MapPost("/reservation", async (HotelDBContext db, Reservation res) =>
+{
+    Room? room = await db.Room.FindAsync(res.Room.Id);
+    Guest? guest = await db.Guest.FindAsync(res.Guest.Id);
+
+    if (room is null || guest is null)
+    {
+        return Results.NotFound();
+    }
+
+    await db.Reservation.AddAsync(res);
+    await db.SaveChangesAsync();
+    return Results.Created($"/room/{res.Id}", res);
+})
+.WithName("CreateReservation")
+.WithTags("Reservation")
+.WithOpenApi();
+
+app.MapDelete("/reservation/{id}", async (HotelDBContext db, int id) =>
+{
+    var res = await db.Reservation.FindAsync(id);
+
+    if (res is null) return Results.NotFound();
+    db.Reservation.Remove(res);
+    await db.SaveChangesAsync();
+    return Results.Ok(id);
+})
+.WithName("DeleteReservation")
+.WithTags("Reservation")
+.WithOpenApi();
+
+app.MapPut("/reservation/{id}", async (HotelDBContext db, Reservation newRes) =>
+{
+    var res = await db.Reservation.FindAsync(newRes);
+
+    if (res is null) return Results.NotFound();
+
+    Room? room = await db.Room.FindAsync(newRes.Room.Id);
+    Guest? guest = await db.Guest.FindAsync(newRes.Guest.Id);
+
+    if (room is null || guest is null) return Results.NotFound();
+
+    res = newRes;
+    await db.SaveChangesAsync();
+    return Results.Ok();
+})
+.WithName("UpdateReservation")
+.WithTags("Reservation")
+.WithOpenApi();
+
+// Service Task API
+
+app.MapGet("/service", async (HotelDBContext db) => await db.ServiceTask.ToListAsync())
+.WithName("GetServices")
+.WithTags("ServiceTask")
+.WithOpenApi();
+
+app.MapPost("/service", async (HotelDBContext db, ServiceTask ser) =>
+{
+    Room? room = await db.Room.FindAsync(ser.Room.Id);
+
+    if (room is null) return Results.NotFound();
+
+    await db.ServiceTask.AddAsync(ser);
+    await db.SaveChangesAsync();
+    return Results.Created($"/room/{ser.Id}", ser);
+})
+.WithName("CreateService")
+.WithTags("ServiceTask")
+.WithOpenApi();
+
+app.MapDelete("/service/{id}", async (HotelDBContext db, int id) =>
+{
+    var ser = await db.ServiceTask.FindAsync(id);
+
+    if (ser is null) return Results.NotFound();
+
+    db.ServiceTask.Remove(ser);
+    await db.SaveChangesAsync();
+    return Results.Ok();
+})
+.WithName("DeleteService")
+.WithTags("ServiceTask")
+.WithOpenApi(); ;
+
 app.Run();
 
 
@@ -246,14 +350,5 @@ public class FilterCriteria
     {
         if (MinBeds != null || MaxBeds != null || MinPrice != null || MaxPrice != null) return true;
         return false;
-    }
-
-    public bool IsSatisfied(Room room)
-    {
-        if (MinBeds != null && MinBeds > room.RoomType.Beds) return false;
-        if (MaxBeds != null && MaxBeds < room.RoomType.Beds) return false;
-        if (MinPrice != null && MinPrice > room.RoomType.Price) return false;
-        if (MaxPrice != null && MaxPrice < room.RoomType.Price) return false;
-        return true;
     }
 }
