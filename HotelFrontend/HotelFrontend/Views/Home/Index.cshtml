@@ -1,8 +1,67 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor Accessor
+@model IEnumerable<HotelFrontend.Models.RoomType>
+
+
+@using (Html.BeginForm("Index", "Home"))
+{
+    <label>From: <input id="FromDate" name="FromDate" type="date" /></label>
+    <label>To: <input id="ToDate" name="ToDate" type="date" /></label>
+    <label>Minimum beds: <input id="MinBeds" name="MinBeds" type="number" min="0" /></label>
+    <label>Maximum beds: <input id="MaxBeds" name="MaxBeds" type="number" /></label>
+    <input type="submit" />
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.RoomSize)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Description)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Beds)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Price)
+            </th>
+            @if (@Accessor.HttpContext.Session.GetString("User") != null)
+            {
+                <th>
+                    Book
+                </th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rt in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(model => rt.RoomSize)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => rt.Description)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => rt.Beds)
+                </td>
+                <td>
+                    @Html.DisplayFor(model => rt.Price)
+                </td>
+                @if (@Accessor.HttpContext.Session.GetString("User") != null)
+                {
+                    <td>
+                        @using (Html.BeginForm("RoomPage","Book"))
+                        {
+                            <input name="roomTypeId" value="@rt.Id" type ="hidden" />
+                            <input type="submit"/>
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>

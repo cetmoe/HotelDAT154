@@ -38,46 +38,52 @@ app.Map("/exception", ()
 { throw new InvalidOperationException("Sample Exception"); });
 
 
-// Haven't implemented any errorhandling
 
-// Hotel routes
 
-app.MapGet("/hotels", async (HotelDBContext db) => await db.Hotel.ToListAsync())
-.WithName("GetHotels")
-.WithTags("Hotel")
+// Guest API
+app.MapGet("/users", async (HotelDBContext db) => await db.User.ToListAsync())
+.WithName("GetUsers")
+.WithTags("User")
 .WithOpenApi();
 
-
-app.MapPost("/hotel", async (HotelDBContext db, Hotel hotel) =>
+app.MapGet("/user/{id}", async (HotelDBContext db, int Id) =>
 {
-    await db.Hotel.AddAsync(hotel);
-    await db.SaveChangesAsync();
-    return Results.Created($"/hotel/{hotel.Id}", hotel);
+    var guest = await db.User.FindAsync(Id);
+    if (guest is null) return Results.NotFound("User not found.");
+    return Results.Ok(guest);
 })
-.WithName("CreateHotel")
-.WithTags("Hotel")
+.WithName("GetUser")
+.WithTags("User")
 .WithOpenApi();
 
-app.MapDelete("/hotel/{id}", async (HotelDBContext db, int id) =>
+app.MapPost("/user", async (HotelDBContext db, User User) =>
 {
-    var hotel = await db.Hotel.FindAsync(id);
-    if (hotel is null)
-    {
-        return Results.NotFound();
-    }
-    db.Hotel.Remove(hotel);
+    if (User is null
+    || User.UserName is null
+    || User.FirstName is null
+    || User.LastName is null
+    || User.Email is null) return Results.Problem("User data missing.");
+
+    List<User> validation = await db.User.Where(u => u.UserName == User.UserName).ToListAsync();
+    if (validation.Count > 0) return Results.Problem("User already exists.");
+
+    await db.User.AddAsync(User);
     await db.SaveChangesAsync();
-    return Results.Ok();
+    return Results.Created($"Created a guest at endpoint /user/{User.UserId}", User);
 })
-.WithName("DeleteHotel")
-.WithTags("Hotel")
+.WithName("CreateUser")
+.WithTags("User")
 .WithOpenApi();
+
+
+
+
+
+
 
 // Room API
-
 app.MapGet("/rooms", async (HotelDBContext db) => await db.Room
 .Include(r => r.RoomType)
-.Include(r => r.Hotel)
 .ToListAsync())
 .WithName("GetRooms")
 .WithTags("Room")
@@ -87,15 +93,14 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
 {
     var rooms = db.Room
     .Include(r => r.RoomType)
-    .Include(r => r.Hotel)
     .Select(r => r);
 
     if (criteria.TypeReq())
     {
-        rooms = rooms.Where(r => criteria.MinBeds != null ? r.RoomType.Beds >= criteria.MinBeds : true);
-        rooms = rooms.Where(r => criteria.MaxBeds != null ? r.RoomType.Beds <= criteria.MaxBeds : true);
-        rooms = rooms.Where(r => criteria.MinPrice != null ? r.RoomType.Beds >= criteria.MinPrice : true);
-        rooms = rooms.Where(r => criteria.MaxPrice != null ? r.RoomType.Beds <= criteria.MaxPrice : true);
+        rooms = rooms.Where(r => criteria.MinBeds == null || r.RoomType.Beds >= criteria.MinBeds);
+        rooms = rooms.Where(r => criteria.MaxBeds == null || r.RoomType.Beds <= criteria.MaxBeds);
+        rooms = rooms.Where(r => criteria.MinPrice == null || r.RoomType.Beds >= criteria.MinPrice);
+        rooms = rooms.Where(r => criteria.MaxPrice == null || r.RoomType.Beds <= criteria.MaxPrice);
     }
 
     if (criteria.Cleaned != null)
@@ -109,10 +114,8 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
     }
 
     var listOfRooms = await rooms.ToListAsync();
-
-
-
     if (listOfRooms.Count > 0) return Results.Ok(listOfRooms);
+
     return Results.NotFound();
 
 })
@@ -123,13 +126,12 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
 app.MapPost("/room", async (HotelDBContext db, Room room) =>
 {
     var roomType = await db.RoomType.FindAsync(room.RoomType.Id);
-    var hotel = await db.Hotel.FindAsync(room.Hotel.Id);
 
-    if (roomType == null || hotel == null) return Results.NotFound();
+    if (roomType == null) return Results.NotFound();
 
     await db.Room.AddAsync(room);
     await db.SaveChangesAsync();
-    return Results.Created($"/room/{room.Id}", room);
+    return Results.Created($"Created a room at endpoint /room/{room.Id}", room);
 })
 .WithName("CreateRoom")
 .WithTags("Room")
@@ -180,34 +182,12 @@ app.MapDelete("/room/{id}", async (HotelDBContext db, int id) =>
 .WithTags("Room")
 .WithOpenApi();
 
-// Guest API
-app.MapGet("/guests", async (HotelDBContext db) => await db.Guest.ToListAsync())
-.WithName("GetGuests")
-.WithTags("Guest")
-.WithOpenApi();
 
-app.MapGet("/guest/{id}", async (HotelDBContext db, int id) =>
-{
-    var guest = await db.Guest.FindAsync(id);
-    if (guest is null)
-    {
-        return Results.NotFound();
-    }
-    return Results.Ok(guest);
-})
-.WithName("GetGuest")
-.WithTags("Guest")
-.WithOpenApi();
 
-app.MapPost("/guest", async (HotelDBContext db, Guest guest) =>
-{
-    await db.Guest.AddAsync(guest);
-    await db.SaveChangesAsync();
-    return Results.Created($"/guest/{guest.Id}", guest);
-})
-.WithName("CreateGuest")
-.WithTags("Guest")
-.WithOpenApi();
+
+
+
+
 
 // RoomType API
 
@@ -216,11 +196,24 @@ app.MapGet("/roomtype", async (HotelDBContext db) => await db.RoomType.ToListAsy
 .WithTags("RoomType")
 .WithOpenApi();
 
+app.MapGet("/roomtype/{id}", async (HotelDBContext db, int id) =>
+{
+    var roomType = await db.RoomType.FindAsync(id);
+    if (roomType is null)
+    {
+        return Results.NotFound("RoomType not found.");
+    }
+    return Results.Ok(roomType);
+})
+.WithName("GetRoomTypeById")
+.WithTags("RoomType")
+.WithOpenApi();
+
 app.MapPost("/roomtype", async (HotelDBContext db, RoomType roomtype) =>
 {
     await db.RoomType.AddAsync(roomtype);
     await db.SaveChangesAsync();
-    return Results.Created($"/room/{roomtype.Id}", roomtype);
+    return Results.Created($"Created a roomtype at endpoint /roomtype/{roomtype.Id}", roomtype);
 })
 .WithName("CreateRoomType")
 .WithTags("RoomType")
@@ -241,36 +234,66 @@ app.MapDelete("/roomtype/{id}", async (HotelDBContext db, int id) =>
 .WithTags("RoomType")
 .WithOpenApi();
 
+
+
+
+
+
+
+
 // Reservation API
 
-app.MapGet("/reservations", async (HotelDBContext db) => await db.Reservation.ToListAsync())
+app.MapGet("/reservations", async (HotelDBContext db) => await db.Reservation
+    .Include(r => r.User)
+    .Include(r => r.Room)
+    .Include(r => r.Room.RoomType)
+    .ToListAsync())
 .WithName("GetReservations")
 .WithTags("Reservation")
 .WithOpenApi();
 
 app.MapPost("/reservation", async (HotelDBContext db, Reservation res) =>
 {
-    Room? room = await db.Room.FindAsync(res.Room.Id);
-    Guest? guest = await db.Guest.FindAsync(res.Guest.Id);
 
-    if (room is null || guest is null)
-    {
-        return Results.NotFound();
-    }
+    var userId = res.User.UserId;
+    var roomId = res.Room.Id;
+    res.Room = null;
+    res.User = null;
+
+    User? user = await db.User.FindAsync(userId);
+    Room? room = await db.Room.FindAsync(roomId);
+
+    res.Room = room;
+    res.User = user;
 
     await db.Reservation.AddAsync(res);
     await db.SaveChangesAsync();
-    return Results.Created($"/room/{res.Id}", res);
+    return Results.Created($"Created a reservation at endpoint /room/{res.Id}", res);
 })
 .WithName("CreateReservation")
+.WithTags("Reservation")
+.WithOpenApi();
+
+app.MapPut("/reservation/{id}", async (HotelDBContext db, Reservation newRes) =>
+{
+    if (await db.Room.FindAsync(newRes.Room.Id) == null) return Results.NotFound("Room does not exist.");
+
+    Reservation? res = await db.Reservation.FindAsync(newRes.Id);
+    if (res is null) return Results.NotFound("The reservation to be edited does not exist.");
+
+    res = newRes;
+    await db.SaveChangesAsync();
+    return Results.Ok("Reservation changes applied successfully.");
+})
+.WithName("UpdateReservation")
 .WithTags("Reservation")
 .WithOpenApi();
 
 app.MapDelete("/reservation/{id}", async (HotelDBContext db, int id) =>
 {
     var res = await db.Reservation.FindAsync(id);
+    if (res is null) return Results.NotFound("Reservation not found.");
 
-    if (res is null) return Results.NotFound();
     db.Reservation.Remove(res);
     await db.SaveChangesAsync();
     return Results.Ok(id);
@@ -279,24 +302,14 @@ app.MapDelete("/reservation/{id}", async (HotelDBContext db, int id) =>
 .WithTags("Reservation")
 .WithOpenApi();
 
-app.MapPut("/reservation/{id}", async (HotelDBContext db, Reservation newRes) =>
-{
-    var res = await db.Reservation.FindAsync(newRes);
 
-    if (res is null) return Results.NotFound();
 
-    Room? room = await db.Room.FindAsync(newRes.Room.Id);
-    Guest? guest = await db.Guest.FindAsync(newRes.Guest.Id);
 
-    if (room is null || guest is null) return Results.NotFound();
 
-    res = newRes;
-    await db.SaveChangesAsync();
-    return Results.Ok();
-})
-.WithName("UpdateReservation")
-.WithTags("Reservation")
-.WithOpenApi();
+
+
+
+
 
 // Service Task API
 
@@ -313,7 +326,7 @@ app.MapPost("/service", async (HotelDBContext db, ServiceTask ser) =>
 
     await db.ServiceTask.AddAsync(ser);
     await db.SaveChangesAsync();
-    return Results.Created($"/room/{ser.Id}", ser);
+    return Results.Created($"Created a service at endpoint /service/{ser.Id}", ser);
 })
 .WithName("CreateService")
 .WithTags("ServiceTask")
@@ -334,7 +347,6 @@ app.MapDelete("/service/{id}", async (HotelDBContext db, int id) =>
 .WithOpenApi(); ;
 
 app.Run();
-
 
 public class FilterCriteria
 {

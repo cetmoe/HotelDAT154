@@ -10,13 +10,10 @@ namespace HotelAPIMinimal.Models
         public int RoomNumber { get; set; }
 
         [Required]
-        public RoomType RoomType { get; set; }
+        public RoomType RoomType { get; set; } = null!;
 
         public Boolean CheckInStatus { get; set; } = false;
 
         public Boolean CleaningStatus { get; set; } = false;
-
-        [Required]
-        public Hotel Hotel { get; set; }
     }
 }

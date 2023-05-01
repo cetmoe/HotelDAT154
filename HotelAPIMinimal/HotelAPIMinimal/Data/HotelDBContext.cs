@@ -7,11 +7,10 @@ namespace HotelAPIMinimal.Data
     {
         public HotelDBContext(DbContextOptions<HotelDBContext> options) : base(options) { }
 
-        public DbSet<Hotel> Hotel { get; set; } = null!;
-        public DbSet<RoomType> RoomType { get; set; } = null!;
         public DbSet<Room> Room { get; set; } = null!;
+        public DbSet<RoomType> RoomType { get; set; } = null!;
         public DbSet<Reservation> Reservation { get; set; } = null!;
         public DbSet<ServiceTask> ServiceTask { get; set; } = null!;
-        public DbSet<Guest> Guest { get; set; } = null!;
+        public DbSet<User> User { get; set; } = null!;
     }
 }

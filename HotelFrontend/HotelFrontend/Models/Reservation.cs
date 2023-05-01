@@ -1,22 +1,29 @@
 ﻿
 
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace HotelAPIMinimal.Models
+namespace HotelFrontend.Models
 {
     public class Reservation
     {
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         [Required]
-        public User User { get; set; } = null!;
+        [JsonPropertyName("user")]
+        public User User { get; set; }
+
         [Required]
-        public Room Room { get; set; } = null!;
+        [JsonPropertyName("room")]
+        public Room Room { get; set; }
 
         [DataType(DataType.Date)]
+        [JsonPropertyName("from")]
         public DateTime From { get; set; }
 
         [DataType(DataType.Date)]
+        [JsonPropertyName("to")]
         public DateTime To { get; set; }
     }
 }

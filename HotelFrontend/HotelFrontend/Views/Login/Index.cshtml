@@ -1,0 +1,22 @@
+﻿@page
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor Accessor
+
+
+@if (@Accessor.HttpContext.Session.GetString("User") == null)
+{
+    <div class="text-center">
+        Use username: TestUser
+    </div>
+    @using (Html.BeginForm())
+    {
+        <label>Username: <input id="UserName" name="UserName" type="text" /></label>
+        <input value="Book" type="submit" />
+    }
+}
+else
+{
+    <div class="text-center">
+        Welcome @Accessor.HttpContext.Session.GetString("User")!
+    </div>
+}

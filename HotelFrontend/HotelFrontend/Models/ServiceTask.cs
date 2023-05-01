@@ -1,19 +1,24 @@
 ﻿
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
-namespace HotelAPIMinimal.Models
+namespace HotelFrontend.Models
 {
     public class ServiceTask
     {
+        [JsonPropertyName("id")]
         public int Id { get; set; }
 
         [Required]
+        [JsonPropertyName("type")]
         public int Type { get; set; }
 
         [DataType(DataType.Date)]
+        [JsonPropertyName("scheduledDate")]
         public DateTime ScheduledDate { get; set; }
 
         [Required]
-        public Room Room { get; set; } = null!;
+        [JsonPropertyName("room")]
+        public Room Room { get; set; }
     }
 }

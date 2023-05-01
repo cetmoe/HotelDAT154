@@ -9,7 +9,7 @@ namespace HotelAPIMinimal.Models
         public string? Description { get; set; }
 
         [Required]
-        public string RoomSize { get; set; }
+        public string RoomSize { get; set; } = null!;
 
         [Required]
         public int Beds { get; set; }

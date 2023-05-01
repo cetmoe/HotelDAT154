@@ -1,32 +1,61 @@
-﻿using HotelFrontend.Models;
+﻿using HotelFrontend.Helpers;
+using HotelFrontend.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace HotelFrontend.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-
-        public HomeController(ILogger<HomeController> logger)
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            _logger = logger;
+            var allRooms = await Helpers.HttpRequest.GetAt<List<Room>>("/rooms");
+
+            List<RoomType>? roomTypes = allRooms?
+                .Select(r => r.RoomType)
+                .DistinctBy(rt => rt.Id)
+                .ToList();
+
+            return View(roomTypes);
         }
 
-        public IActionResult Index()
+        [HttpPost]
+        public async Task<IActionResult> Index(DateTime? FromDate, DateTime? ToDate, int? MinBeds, int? MaxBeds)
         {
-            return View();
-        }
+            var allRooms = await Helpers.HttpRequest.GetAt<List<Room>>("/rooms");
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+            var allReservations = await Helpers.HttpRequest.GetAt<List<Reservation>>("/reservations");
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
-        {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            // Removes rooms that are occupied with in the date
+            allRooms?
+                .RemoveAll(r => allReservations?.Find(res =>
+                {
+                    if (res.Room.Id == r.Id)
+                    {
+                        if (FromDate != null && res.From < FromDate && res.To > FromDate) return true;
+                        if (ToDate != null && res.From < ToDate && res.To > ToDate) return true;
+                        if (FromDate != null && ToDate != null && res.From >= FromDate && res.To <= ToDate) return true;
+                    }
+                    return false;
+                }) != null);
+
+            if (MinBeds != null)
+            {
+                allRooms?.RemoveAll(r => r.RoomType.Beds < MinBeds);
+            }
+
+            if (MaxBeds != null)
+            {
+                allRooms?.RemoveAll(r => r.RoomType.Beds > MaxBeds);
+            }
+
+            List<RoomType>? filteredRoomTypes = allRooms?
+                .Select(r => r.RoomType)
+                .DistinctBy(r => r.Id)
+                .ToList();
+
+
+            return View(filteredRoomTypes);
         }
     }
 }

@@ -1,0 +1,22 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model HotelFrontend.Models.RoomType
+
+
+@if(Model != null)
+{
+    <div class="text-center">
+        Booking a @Model.RoomSize room. The room has @Model.Beds beds and costs @Model.Price per night.
+    </div>
+
+    @using(Html.BeginForm("BookRoom", "Book"))
+    {
+        <label>From: <input id="FromDate" name="FromDate" type="date" /></label>
+        <label>To: <input id="ToDate" name="ToDate" type="date" /></label>
+        <input name="RoomTypeId" value=@Model.Id type="hidden" />
+        <input type="submit" />
+    }
+}
