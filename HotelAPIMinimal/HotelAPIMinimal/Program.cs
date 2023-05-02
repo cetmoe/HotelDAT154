@@ -1,6 +1,7 @@
 using HotelAPIMinimal.Data;
 using HotelAPIMinimal.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,8 +21,20 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "CorsPolicy", policy =>
+    {
+        policy.AllowAnyOrigin();
+        policy.AllowAnyHeader();
+        policy.AllowAnyMethod();
+    });
+});
+
 
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -103,11 +116,6 @@ app.MapGet("/rooms/filter", async (HotelDBContext db, [AsParameters] FilterCrite
         rooms = rooms.Where(r => criteria.MaxPrice == null || r.RoomType.Beds <= criteria.MaxPrice);
     }
 
-    if (criteria.Cleaned != null)
-    {
-        rooms = rooms.Where(r => r.CleaningStatus == criteria.Cleaned);
-    }
-
     if (criteria.Checkedin != null)
     {
         rooms = rooms.Where(r => r.CheckInStatus == criteria.Checkedin);
@@ -166,6 +174,7 @@ app.MapPut("/room/cleaning/{id}", async (HotelDBContext db, int id) =>
 .WithName("ToggleCleaning")
 .WithTags("Room")
 .WithOpenApi();
+
 
 app.MapDelete("/room/{id}", async (HotelDBContext db, int id) =>
 {
@@ -313,7 +322,7 @@ app.MapDelete("/reservation/{id}", async (HotelDBContext db, int id) =>
 
 // Service Task API
 
-app.MapGet("/service", async (HotelDBContext db) => await db.ServiceTask.ToListAsync())
+app.MapGet("/services", async (HotelDBContext db) => await db.ServiceTask.Include(s => s.Room).Include(s => s.Room.RoomType).ToListAsync())
 .WithName("GetServices")
 .WithTags("ServiceTask")
 .WithOpenApi();
@@ -329,6 +338,26 @@ app.MapPost("/service", async (HotelDBContext db, ServiceTask ser) =>
     return Results.Created($"Created a service at endpoint /service/{ser.Id}", ser);
 })
 .WithName("CreateService")
+.WithTags("ServiceTask")
+.WithOpenApi();
+
+app.MapPut("/service", async (HotelDBContext db, ServiceTask ser) =>
+{
+    Room? room = await db.Room.FindAsync(ser.Room.Id);
+    ServiceTask service = await db.ServiceTask.FindAsync(ser.Id);
+
+    if (room is null || service is null)
+    {
+        Debug.WriteLine("null");
+        return Results.NotFound();
+    }
+
+    service.Note = ser.Note;
+    service.Status = ser.Status;
+    await db.SaveChangesAsync();
+    return Results.Ok(ser);
+})
+.WithName("UpdateService")
 .WithTags("ServiceTask")
 .WithOpenApi();
 

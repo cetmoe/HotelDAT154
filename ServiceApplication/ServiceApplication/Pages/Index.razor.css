@@ -1,0 +1,24 @@
+﻿.m_bot {
+    margin-bottom: 2em;
+}
+
+.current {
+    background-color: deepskyblue;
+}
+
+.content {
+    padding: 0 18px;
+    display: none;
+    overflow: hidden;
+    background-color: #f1f1f1;
+}
+
+.show {
+    padding: 0 18px;
+    background-color: #f1f1f1;
+}
+
+.clickable {
+    cursor: pointer;
+    user-select:none;
+}

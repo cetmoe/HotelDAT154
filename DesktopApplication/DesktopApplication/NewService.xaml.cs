@@ -12,7 +12,7 @@ namespace DesktopApplication
     public partial class NewService : Window
     {
         public CetmoeContext Db { get; set; }
-        public List<int> types = new List<int>() { 1, 2, 3 };
+        public List<int> types = new List<int>() { 0, 1, 2 };
 
         public NewService(CetmoeContext database)
         {

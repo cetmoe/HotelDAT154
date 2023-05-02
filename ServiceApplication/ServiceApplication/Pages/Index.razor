@@ -1,0 +1,150 @@
+﻿@page "/"
+@inject HttpClient Http
+@using Microsoft.AspNetCore.Components.Forms
+
+
+<div class="m_bot">
+    <h3>Select Service</h3>
+    <button class="@(currentServicer == 0 ? "current" : "")" @onclick="() => SetServicer(0)" type="button">Cleaner</button>
+    <button class="@(currentServicer == 1 ? "current" : "")" @onclick="() => SetServicer(1)" type="button">Servicer</button>
+    <button class="@(currentServicer == 2 ? "current" : "")" @onclick="() => SetServicer(2)" type="button">Maintainer</button>
+</div>
+
+<h3>Service List</h3>
+@if (serviceTasks == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Type</th>
+                <th>Scheduled Date</th>
+                <th>Room Number</th>
+                <th>Note</th>
+                <th>Completion Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var service in filteredTasks)
+            {
+                <tr @onclick="() => ToggleContent(service.Id)" class="clickable">
+                    <td>@types[service.Type]</td>
+                    <td>@service.ScheduledDate</td>
+                    <td>@service.Room.RoomNumber</td>
+                    <td>@service.Note</td>
+                    <td>@statusTypes[service.Status]</td>
+                </tr>
+                <tr class="@(toggled.ContainsKey(service.Id) ? "" : "content")">
+                    <td colspan="2">
+                        <EditForm Model="@service" OnSubmit="() => HandleNoteSubmit(service)">
+                            <InputText id="@service.Id" @bind-Value="@service.Note" />
+                            <button type="submit">Add Note</button>
+                        </EditForm>
+                    </td>
+                    <td colspan="2">
+                        <EditForm Model="@service" OnSubmit="() => HandleStatusSubmit(service)">
+                            <InputSelect id="@service.Id" @bind-Value="@service.Status">
+                                @foreach(var type in statusTypes)
+                                {
+                                    <option value="@Array.IndexOf(statusTypes,type)">@type</option>
+                                }
+                            </InputSelect>
+                            <button type="submit">Update Status</button>
+                        </EditForm>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private List<ServiceTask> serviceTasks;
+    private List<ServiceTask> filteredTasks;
+
+    private int currentServicer = -1;
+    private Dictionary<int, bool> toggled = new();
+    private Dictionary<int, string> notes = new();
+
+    private string[] types = { "Cleaning", "Service", "Maintenance" };
+    private string[] statusTypes = { "New", "In Progress", "Completed" };
+
+    private ElementReference element;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Http.BaseAddress = new Uri("http://localhost:5008");
+        serviceTasks = await Http.GetFromJsonAsync<List<ServiceTask>>("/services");
+
+        filteredTasks = serviceTasks;
+    }
+
+    private void ToggleContent(int id)
+    {
+        if (!toggled.ContainsKey(id)) toggled[id] = true;
+        else toggled.Remove(id);
+    }
+
+    private async void HandleStatusSubmit(ServiceTask s)
+    {
+        await Http.PutAsJsonAsync("/service", s);
+    }
+
+    private async void HandleNoteSubmit(ServiceTask s)
+    {
+        await Http.PutAsJsonAsync("/service", s);
+    }
+
+    private void SetServicer(int servicer)
+    {
+        if (currentServicer != servicer) currentServicer = servicer;
+        else currentServicer = -1;
+
+        if (currentServicer == 0)
+        {
+            filteredTasks = serviceTasks.Where(s => s.Room.CheckInStatus == false && s.Room.CleaningStatus == false).ToList();
+        }
+        else if (currentServicer != -1)
+        {
+            filteredTasks = serviceTasks.Where(t => t.Type == currentServicer).ToList();
+        }
+        else
+        {
+            filteredTasks = serviceTasks;
+        }
+    }
+
+    public class ServiceTask
+    {
+        public int Id { get; set; }
+
+        public int Type { get; set; }
+
+        public DateTime ScheduledDate { get; set; }
+
+        public int RoomId { get; set; }
+
+        public int Status { get; set; }
+
+        public string? Note { get; set; }
+
+        public virtual Room Room { get; set; } = null!;
+    }
+
+    public class Room
+    {
+        public int Id { get; set; }
+
+        public int RoomNumber { get; set; }
+
+        public int RoomTypeId { get; set; }
+
+        public bool CheckInStatus { get; set; }
+
+        public bool CleaningStatus { get; set; }
+    }
+}

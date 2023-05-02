@@ -17,8 +17,5 @@ namespace HotelFrontend.Models
 
         [JsonPropertyName("checkInStatus")]
         public Boolean CheckInStatus { get; set; } = false;
-
-        [JsonPropertyName("cleaningStatus")]
-        public Boolean CleaningStatus { get; set; } = false;
     }
 }

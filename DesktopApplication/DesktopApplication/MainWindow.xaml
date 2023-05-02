@@ -85,6 +85,8 @@
                                     <GridViewColumn Width="auto" Header=" Type " DisplayMemberBinding="{Binding Path=Type}"/>
                                     <GridViewColumn Width="auto" Header=" Scheduled Date " DisplayMemberBinding="{Binding Path=ScheduledDate}"/>
                                     <GridViewColumn Width="auto" Header=" Room " DisplayMemberBinding="{Binding Path=Room.RoomNumber}"/>
+                                    <GridViewColumn Width="auto" Header=" Status " DisplayMemberBinding="{Binding Path=Status}"/>
+                                    <GridViewColumn Width="auto" Header=" Note " DisplayMemberBinding="{Binding Path=Note}"/>
                                 </GridView.Columns>
                             </GridView>
                         </ListView.View>

@@ -1,5 +1,4 @@
-﻿
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace HotelAPIMinimal.Models
 {
@@ -15,5 +14,10 @@ namespace HotelAPIMinimal.Models
 
         [Required]
         public Room Room { get; set; } = null!;
+
+        [Required]
+        public int Status { get; set; } = 0;
+
+        public string Note { get; set; }
     }
 }
