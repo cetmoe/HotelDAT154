@@ -1,0 +1,36 @@
+﻿<Window x:Class="DesktopApplication.NewService"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DesktopApplication"
+        mc:Ignorable="d"
+        Title="NewService" Height="450" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel HorizontalAlignment="center" Grid.Row="1">
+            <TextBlock Text="Select type" />
+            <ComboBox ItemsSource="{Binding}" Name="TypeSelect" Height="20" Width="200"/>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="center" Grid.Row="2">
+            <TextBlock Text="Select room" />
+            <ComboBox ItemsSource="{Binding}" DisplayMemberPath="RoomNumber" Name="ServiceRoomSelect" Height="20" Width="200"/>
+        </StackPanel>
+
+        <StackPanel HorizontalAlignment="center" Grid.Row="3">
+            <TextBlock Text="Scheduled Date" />
+            <DatePicker Name="ScheduledDate" />
+        </StackPanel>
+
+        <Button Content="Create Service" Grid.Row="4" Height="25" Width="200" Name="CreateReservation" Click="CreateService_Click" />
+    </Grid>
+</Window>

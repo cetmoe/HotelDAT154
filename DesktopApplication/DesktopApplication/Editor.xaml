@@ -1,0 +1,46 @@
+﻿<Window x:Class="DesktopApplication.Editor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DesktopApplication"
+        mc:Ignorable="d"
+        Title="Editor" Height="270" Width="300">
+    <Grid>
+        <Grid.ColumnDefinitions >
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Margin="19,16,27,12">
+            <TextBlock Text="Reservation id: " />
+            <TextBlock Grid.Column="0" Grid.Row="0" Name="Id"  Text=""/>
+        </StackPanel>
+        <StackPanel Grid.Column="0" Grid.Row="1">
+            <TextBlock HorizontalAlignment="Center" Text="Change room number:" />
+            <TextBox Name="roomNumber" Width="200" Height="20"/>
+        </StackPanel>
+        <StackPanel Grid.Column="0" Grid.Row="2">
+            <TextBlock HorizontalAlignment="Center" Text="Change from date:" />
+            <DatePicker Name="fromDate" Width="200"/>
+        </StackPanel>
+        <StackPanel Grid.Column="0" Grid.Row="3">
+            <TextBlock HorizontalAlignment="Center" Text="Change to date:" />
+            <DatePicker Name="toDate" Width="200"/>
+        </StackPanel>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions >
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Grid.Column="0" Content="Edit" Click="Button_Click" />
+            <Button Grid.Column="1" Grid.Row="5" Content="Delete" Click="Button_Click_1" />
+        </Grid>
+    </Grid>
+</Window>

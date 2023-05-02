@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor Accessor
+@model IEnumerable<HotelFrontend.Models.Reservation>
+
+@if (@Accessor.HttpContext.Session.GetString("User") == null)
+{
+    <div class="text-center">
+        You are not logged in.
+    </div>
+}
+else {
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.From)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.To)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Room.RoomType.Beds)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Room.RoomType.RoomSize)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Room.RoomType.Price)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var res in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(model => res.From)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => res.To)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => res.Room.RoomType.Beds)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => res.Room.RoomType.RoomSize)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => res.Room.RoomType.Price)
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

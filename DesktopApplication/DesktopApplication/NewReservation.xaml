@@ -1,0 +1,94 @@
+﻿<Window x:Class="DesktopApplication.NewReservation"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:DesktopApplication"
+        mc:Ignorable="d"
+        Title="NewReservation" Height="450" Width="300">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+
+        <StackPanel HorizontalAlignment="center" Grid.Row="1">
+            <TextBlock Text="Select user" />
+            <ComboBox ItemsSource="{Binding}" DisplayMemberPath="UserName" Name="UserSelect" Height="20" Width="200" SelectionChanged="UserSelect_SelectionChanged"/>
+        </StackPanel>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                <TextBlock Text="Name: " />
+                <TextBlock Name="NewFirstName" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="0" Grid.Row="1">
+                <TextBlock Text="Email: " />
+                <TextBlock Name="NewEmail" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="1" Grid.Row="0">
+                <TextBlock Text="Last Name: " />
+                <TextBlock Name="NewLastName" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="1" Grid.Row="1">
+                <TextBlock Text="Phone: " />
+                <TextBlock Name="NewPhoneNumber" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel HorizontalAlignment="center" Grid.Row="3">
+            <TextBlock Text="Select room" />
+            <ComboBox ItemsSource="{Binding}" DisplayMemberPath="RoomNumber" Name="RoomSelect" Height="20" Width="200" SelectionChanged="RoomSelect_SelectionChanged"/>
+        </StackPanel>
+
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="0" Grid.Row="0">
+                <TextBlock Text="Room Size: " />
+                <TextBlock Name="NewRoomSize" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="0" Grid.Row="1">
+                <TextBlock Text="Price: " />
+                <TextBlock Name="NewPrice" />
+            </StackPanel>
+            <StackPanel HorizontalAlignment="center" Orientation="Horizontal" Grid.Column="1" Grid.Row="0">
+                <TextBlock Text="Beds: " />
+                <TextBlock Name="NewBeds" />
+            </StackPanel>
+        </Grid>
+        
+        <StackPanel HorizontalAlignment="center" Grid.Row="5">
+            <TextBlock Text="From Date" />
+            <DatePicker Name="NewFromDate" />
+        </StackPanel>
+        <StackPanel HorizontalAlignment="center" Grid.Row="6">
+            <TextBlock Text="From Date" />
+            <DatePicker Name="NewToDate"/>
+        </StackPanel>
+
+        <Button Content="Create Reservation" Grid.Row="7" Height="25" Width="200" Name="CreateReservation" Click="CreateReservation_Click" />
+    </Grid>
+</Window>

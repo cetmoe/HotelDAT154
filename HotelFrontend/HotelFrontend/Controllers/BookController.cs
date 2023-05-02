@@ -1,6 +1,5 @@
 ﻿using HotelFrontend.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace HotelFrontend.Controllers
@@ -52,8 +51,6 @@ namespace HotelFrontend.Controllers
                 From = (DateTime)FromDate,
                 To = (DateTime)ToDate,
             };
-
-            Debug.WriteLine(Helpers.HttpRequest.PostAt<Reservation>("/reservation", reservation));
 
             return View();
         }

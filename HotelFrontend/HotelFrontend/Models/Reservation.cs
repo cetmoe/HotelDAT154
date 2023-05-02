@@ -1,5 +1,6 @@
 ﻿
 
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
@@ -20,10 +21,12 @@ namespace HotelFrontend.Models
 
         [DataType(DataType.Date)]
         [JsonPropertyName("from")]
+        [DisplayName("From date")]
         public DateTime From { get; set; }
 
         [DataType(DataType.Date)]
         [JsonPropertyName("to")]
+        [DisplayName("To date")]
         public DateTime To { get; set; }
     }
 }

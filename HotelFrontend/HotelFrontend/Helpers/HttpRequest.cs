@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net;
+﻿using System.Net;
 using System.Text.Json;
 
 namespace HotelFrontend.Helpers
@@ -25,12 +24,10 @@ namespace HotelFrontend.Helpers
             using HttpResponseMessage response = await client.PostAsJsonAsync(Endpoint, data);
 
             var str = JsonSerializer.Serialize<T>(data);
-            Debug.WriteLine(str);
 
             response.EnsureSuccessStatusCode();
 
             var item = await response.Content.ReadFromJsonAsync<T>();
-            Debug.WriteLine(item);
 
             if (response.StatusCode == HttpStatusCode.Created) return true;
             return false;
