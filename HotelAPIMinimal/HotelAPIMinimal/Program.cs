@@ -137,6 +137,8 @@ app.MapPost("/room", async (HotelDBContext db, Room room) =>
 
     if (roomType == null) return Results.NotFound();
 
+
+
     await db.Room.AddAsync(room);
     await db.SaveChangesAsync();
     return Results.Created($"Created a room at endpoint /room/{room.Id}", room);

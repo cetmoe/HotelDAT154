@@ -71,6 +71,11 @@ namespace DesktopApplication
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
+            Db.Reservations.Load();
+            Db.Rooms.Load();
+            Db.Users.Load();
+            Db.RoomTypes.Load();
+            Db.ServiceTasks.Load();
             resList.DataContext = Reservations.ToList();
             roomList.DataContext = Rooms.ToList();
             serviceList.DataContext = Services.ToList();
