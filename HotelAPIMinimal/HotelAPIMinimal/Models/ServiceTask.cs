@@ -18,6 +18,6 @@ namespace HotelAPIMinimal.Models
         [Required]
         public int Status { get; set; } = 0;
 
-        public string Note { get; set; }
+        public string? Note { get; set; } = "";
     }
 }

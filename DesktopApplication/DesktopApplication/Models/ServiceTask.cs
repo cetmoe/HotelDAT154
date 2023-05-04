@@ -14,7 +14,7 @@ public partial class ServiceTask
 
     public int Status { get; set; }
 
-    public string Note { get; set; }
+    public string? Note { get; set; } = "";
 
     public virtual Room Room { get; set; } = null!;
 }

@@ -52,6 +52,8 @@ namespace HotelFrontend.Controllers
                 To = (DateTime)ToDate,
             };
 
+            await Helpers.HttpRequest.PostAt<Reservation>("/reservation", reservation);
+
             return View();
         }
     }

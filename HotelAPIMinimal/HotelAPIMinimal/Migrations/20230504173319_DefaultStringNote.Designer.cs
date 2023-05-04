@@ -4,6 +4,7 @@ using HotelAPIMinimal.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelAPIMinimal.Migrations
 {
     [DbContext(typeof(HotelDBContext))]
-    partial class HotelDBContextModelSnapshot : ModelSnapshot
+    [Migration("20230504173319_DefaultStringNote")]
+    partial class DefaultStringNote
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
